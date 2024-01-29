@@ -1,0 +1,267 @@
+#include <iostream>
+#include <cstdlib>
+#include <conio.h>
+
+using namespace std;
+
+class Book
+{
+private:
+
+    string title;
+    string author;
+    string ISBN;
+    Book* next;
+
+public:
+
+    //getters
+    string get_title()
+    {
+        return title;
+    }
+
+    string get_author()
+    {
+        return author;
+    }
+
+    string get_ISBN()
+    {
+        return ISBN;
+    }
+
+    Book* get_next()
+    {
+        return next;
+    }
+
+    //setters
+
+    void set_title(string title_)
+    {
+        title = title_;
+    }
+
+    void set_author(string auth)
+    {
+        author = auth;
+    }
+
+    void set_ISBN(string isb)
+    {
+        ISBN = isb;
+    }
+
+    Book* set_next(Book* next_)
+    {
+        next = next_;
+    }
+
+};
+
+Book* head = NULL;
+
+class Library: public Book
+{
+
+public:
+    void add(string title, string author, string ISBN)
+    {
+        Book* temp = new Book();
+        temp->set_title(title);
+        temp->set_author(author);
+        temp->set_ISBN(ISBN);
+        temp->set_next(NULL);
+        if(head == NULL)
+        {
+            head = temp;
+        }
+        else
+        {
+            Book* temp1 = head;
+            while(temp1->get_next() != NULL)
+            {
+                temp1 = temp1->get_next();
+            }
+            temp1->set_next(temp);
+        }
+
+
+    }
+
+    void del(string tit)
+    {
+        int n = 0, j = 0;
+        Book* temp = head;
+
+
+
+        while(temp != NULL)
+        {
+            n++;
+            if(tit == temp->get_title())
+            {
+                j++;
+                break;
+            }
+            temp = temp->get_next();
+        }
+
+
+
+        if(j == 0)
+        {
+            cout<<"A book with this title does not exist in the library!"<<endl;
+            return;
+        }
+
+        Book* temp1 = head;
+
+        if(n == 1)
+        {
+            head = temp1->get_next();
+            free(temp1);
+            return;
+        }
+
+        for(int i = 0; i<n - 2; i++)
+        {
+            temp1 = temp1->get_next();
+
+        }
+
+
+        Book* temp2 = temp1->get_next();
+        temp1->set_next(temp2->get_next()) ;
+        free(temp2);
+
+
+    }
+
+    void print()
+    {
+        Book* temp = head;
+        if(head == NULL)
+        {
+            cout<<"The library is empty there is nothing to print!"<<endl;
+            return;
+        }
+        while(temp != NULL)
+        {
+            cout<<"Title: "<<temp->get_title()<<endl;
+            cout<<"Author: "<<temp->get_author()<<endl;
+            cout<<"ISBN: "<<temp->get_ISBN()<<endl<<endl;
+            temp = temp->get_next();
+        }
+    }
+
+    void clearLib()
+    {
+        Book* temp = head;
+        while(temp != NULL)
+        {
+            Book* current = temp;
+            temp = temp->get_next();
+            free(current);
+        }
+        head = NULL;
+    }
+
+
+
+
+
+};
+
+int main()
+{
+    int n, i, op;
+    string title, author, ISBN, rem;
+    Library lib;
+
+    while(true)
+    {
+
+        system("cls");
+        cout << "Menu:\n";
+        cout << "1. Add books\n";
+        cout << "2. Delete a book\n";
+        cout << "3. Display the library\n";
+        cout << "4. Clear the library\n";
+        cout << "0. Exit\n";
+        cin>>op;
+
+        switch (op)
+        {
+            case 1:
+                cout<<"How many books do you want to insert in the library? ";
+                cin>>n;
+
+                for(i = 0; i<n; i++)
+                {
+                    cout<<"Title of the book: ";
+                    cin>>title;
+                    cout<<"Author of the book: ";
+                    cin>>author;
+                    cout<<"ISBN of the book: ";
+                    cin>>ISBN;
+                    lib.add(title, author, ISBN);
+                }
+                cout<<"Books added successfully to the library!"<<endl<<"Press any key to continue: ";
+                getch();
+                break;
+
+
+
+
+            case 2:
+
+                if(head == NULL)
+                {
+                    cout<<"The library is empty there is nothing to delete!"<<endl;
+                    cout<<"The book was deleted successfully!";
+                    cout<<"Press any key to continue: ";
+                    getch();
+                }
+                else
+                {
+                    cout<<"Title of the book the you want to delete: ";
+                    cin>>rem;
+                    lib.del(rem);
+                    cout<<"The book was deleted successfully!";
+                    cout<<"Press any key to continue: ";
+                    getch();
+                }
+                break;
+
+
+            case 3:
+                lib.print();
+                cout<<"Press any key to continue: ";
+                getch();
+                break;
+
+            case 4:
+                lib.clearLib();
+                cout<<"Press any key to continue: ";
+                getch();
+                break;
+
+
+            case 0:
+                exit(0);
+
+            default:
+                cout<<"Invalid choice"<<endl;
+                cout<<"Press any key to continue: ";
+                getch();
+
+        }
+
+
+
+    }
+
+    return 0;
+}
