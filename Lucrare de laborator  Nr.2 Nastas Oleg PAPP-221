@@ -1,0 +1,960 @@
+#include <iostream>
+#include <string>
+#include <sstream>
+#include <fstream>
+#include <cstdlib>
+#include <conio.h>
+
+
+using namespace std;
+
+
+
+enum StudyField {
+    MECHANICAL_ENGINEERING,
+    SOFTWARE_ENGINEERING,
+    FOOD_TECHNOLOGY,
+    URBANISM_ARCHITECTURE,
+    VETERINARY_MEDICINE
+};
+
+class Student
+{
+public:
+
+    string firstName;
+    string lastName;
+    string email;
+    string enrollmentDate;
+    string day, month, year;
+    Student* next;
+    Student* next_in_faculty;
+
+public:
+
+    Student(string fname, string lname, string eml, string eDate, string dy, string mnth, string yr)
+        : firstName(fname), lastName(lname), email(eml), enrollmentDate(eDate), day(dy), month(mnth), year(yr), next(NULL){}
+
+
+
+};
+
+Student* head_st = NULL;
+
+
+
+class Faculty
+{
+    public:
+
+        string faculty_Name;
+        string faculty_Abbreviation;
+        StudyField field;
+        Student* head_fst = NULL;
+        Faculty* next;
+
+    public:
+        Faculty(string fc_name, string f_abbr, StudyField st_field)
+            : faculty_Name(fc_name), faculty_Abbreviation(f_abbr), field(st_field), next(NULL){}
+
+
+        void add_student(string fname, string lname, string email, string enrollment, string day, string month, string year)
+        {
+            Student* student1 = new Student(fname, lname, email, enrollment, day, month, year);
+            if(head_fst == NULL)
+            {
+                head_fst = student1;
+            }
+            else
+            {
+                Student* student2 = head_fst;
+                while(student2->next != NULL)
+                {
+                    student2 = student2->next;
+                }
+                student2->next = student1;
+            }
+
+        }
+
+        void search_student_faculty_by_email(string email);
+
+
+
+
+
+
+
+};
+
+Faculty* head_fc = NULL;
+
+
+class Graduates
+{
+public:
+
+    string firstName;
+    string lastName;
+    string email;
+    string day, month, year;
+    string enrollmentDate;
+    string graduation_date;
+    string faculty_abbreviation;
+    Graduates* next;
+
+
+    Graduates(string fname, string lname, string eml, string dy, string mnth, string yr, string eDate, string gDate, string f_abbr)
+        : firstName(fname), lastName(lname), email(eml), day(dy), month(mnth), year(yr), enrollmentDate(eDate), graduation_date(gDate), faculty_abbreviation(f_abbr), next(NULL){}
+
+
+
+};
+Graduates* head_gr = NULL;
+
+
+
+
+class Functions
+{
+    private:
+
+        Faculty* facult;
+        bool find_faculty_abbreviation(string abbr)
+        {
+            Faculty* fcl = head_fc;
+            while(fcl != NULL && fcl->faculty_Abbreviation != abbr)
+            {
+                fcl = fcl->next;
+            }
+
+            if(fcl == NULL)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+
+        }
+
+
+
+    public:
+
+        void createFaculty (string fct, string fy_abbr, StudyField field)
+        {
+            Faculty* n_faculty = new Faculty(fct, fy_abbr, field);
+            if(head_fc == NULL)
+            {
+                head_fc = n_faculty;
+            }
+            else
+            {
+                Faculty* temp = head_fc;
+                while(temp->next != NULL)
+                {
+                    temp = temp->next;
+                }
+                temp->next = n_faculty;
+            }
+
+        }
+
+        void createStudent(string fname, string lname, string email, string enrollment, string day, string month, string year, string abbreviation)
+        {
+            bool tr = find_faculty_abbreviation(abbreviation);
+
+             if(tr == true)
+             {
+
+                     Student* temp = new Student(fname, lname, email, enrollment, day, month, year);
+
+                     if(head_st == NULL)
+                     {
+                         head_st = temp;
+
+                     }
+                     else
+                     {
+                         Student* temp2 = head_st;
+                         while(temp2->next != NULL)
+                         {
+                             temp2 = temp2->next;
+                         }
+                         temp2->next = temp;
+
+                     }
+
+                     Faculty* fty = head_fc;
+                     while(fty != NULL && fty->faculty_Abbreviation != abbreviation)
+                     {
+                         fty = fty->next;
+                     }
+
+                     if(fty != NULL)
+                     {
+                         fty->add_student(fname, lname, email, enrollment, day, month, year);
+                     }
+                     else
+                     {
+                         cout<<"Faculty not found"<<endl;
+                     }
+
+
+
+             }
+
+
+        }
+
+
+
+             void display_all_Faculty()
+             {
+                 Faculty* temp_fc = head_fc;
+                 while(temp_fc != NULL)
+                 {
+                     cout<<temp_fc->faculty_Name<<"--"<<temp_fc->faculty_Abbreviation<<endl;
+                     temp_fc = temp_fc->next;
+                 }
+                 cin.ignore();
+                 cin.get();
+             }
+
+             void display_all_Students()
+             {
+                 Student* temp_st = head_st;
+                 while(temp_st != NULL)
+                 {
+                     cout<<temp_st->firstName<<" "<<temp_st->lastName<<" "<<temp_st->email<<" "<<temp_st->enrollmentDate<<" "<<temp_st->day<<" "<<temp_st->month<<" "<<temp_st->year<<endl;
+                     temp_st = temp_st->next;
+
+                 }
+                 cin.ignore();
+                 cin.get();
+
+
+             }
+
+
+
+
+
+             static void search_student_faculty_by_email(string email)
+             {
+                 Faculty* search_ft = head_fc;
+                 while(search_ft != NULL)
+                 {
+                     Student* search_st = head_st;
+                     while(search_st != NULL && search_st->email != email)
+                     {
+                         search_st = search_st->next;
+                     }
+                     if(search_st != NULL)
+                     {
+                         cout << "Student with email " << email << " belongs to faculty: ";
+                         cout << search_ft->faculty_Name << "  " << search_ft->faculty_Abbreviation << endl;
+                         cin.ignore();
+                         cin.get();
+                         return;
+                     }
+
+                     search_ft = search_ft->next;
+                 }
+
+                 cout << "Student with email " << email << " not found in any faculty." << endl;
+
+             }
+
+
+             void display_univerity_faculties_of_a_field(StudyField field)
+             {
+                 Faculty* faculty_srch = head_fc;
+                 cout<<"Faculties belonging to "<<field<<" field: "<<endl;
+                 while(faculty_srch != NULL)
+                 {
+                     if(faculty_srch->field == field)
+                     {
+
+                         cout<<faculty_srch->faculty_Name<<" "<<faculty_srch->faculty_Abbreviation<<endl;
+
+                     }
+                     faculty_srch = faculty_srch->next;
+                 }
+
+
+                 cin.ignore();
+                 cin.get();
+
+
+             }
+
+
+
+
+
+              void graduate_list(string fname, string lname, string email, string enrollment, string day, string month, string year, string grad_date, string fc_abb)
+              {
+
+
+                 Graduates* temp = new Graduates(fname, lname, email, day, month, year, enrollment, grad_date, fc_abb);
+                 if(head_gr == NULL)
+                 {
+                     head_gr = temp;
+                 }
+                 else
+                 {
+                     Graduates* temp2 = head_gr;
+                     while(temp2->next != NULL)
+                     {
+                         temp2 = temp2->next;
+                     }
+                     temp2->next = temp;
+                 }
+
+              }
+
+
+
+
+
+               void graduate_student(string email)
+               {
+                    Faculty* gr_st = head_fc;
+
+                    while (gr_st != NULL)
+                    {
+                        Student* st = gr_st->head_fst;
+                        Student* prev = NULL;
+
+                        while (st != NULL && st->email != email)
+                        {
+                            prev = st;
+                            st = st->next;
+                        }
+
+                        if (st != NULL)
+                        {
+
+                            string gDate;
+                            cout << "Graduation date: ";
+                            getline(cin, gDate);
+
+
+                            graduate_list(st->firstName, st->lastName, st->email, st->day, st->month, st->year, st->enrollmentDate, gDate, gr_st->faculty_Abbreviation);
+
+
+                            if (prev == NULL)
+                            {
+
+                                gr_st->head_fst = st->next;
+                                delete st;
+                            }
+                            else
+                            {
+
+                                prev->next = st->next;
+                                delete st;
+                            }
+                            return;
+                        }
+
+                        gr_st = gr_st->next;
+                    }
+
+                    cout << "Student with email " << email << " not found in any faculty." << endl;
+                }
+
+
+
+
+             void display_graduates(string abbr)
+             {
+                 Graduates* temp_st = head_gr;
+                 while(temp_st != NULL)
+                 {
+                     if(temp_st->faculty_abbreviation == abbr)
+                     {
+                         cout<<temp_st->firstName<<" "<<temp_st->lastName<<" "<<temp_st->email<<" "<<temp_st->enrollmentDate<<" "<<temp_st->day<<" "<<temp_st->month<<" "<<temp_st->year<<endl;
+
+                     }
+                     temp_st = temp_st->next;
+                 }
+             }
+
+
+
+            void display_enrolled_students(string abbr)
+            {
+                Faculty* temp_fc = head_fc;
+
+                while (temp_fc != NULL && temp_fc->faculty_Abbreviation != abbr)
+                {
+                    temp_fc = temp_fc->next;
+                }
+
+                if (temp_fc != NULL)
+                {
+
+                    Student* temp_st = temp_fc->head_fst;
+
+                    while (temp_st != NULL)
+                    {
+                        cout << temp_st->firstName << " " << temp_st->lastName << " "
+                             << temp_st->email << " " << temp_st->enrollmentDate << " "
+                             << temp_st->day << " " << temp_st->month << " " << temp_st->year << endl;
+                        temp_st = temp_st->next;
+                    }
+                }
+
+                else
+                {
+                    cout << "Faculty with abbreviation " << abbr << " not found." << endl;
+                }
+
+            }
+
+
+
+            void belongs_to_faculty(string abbr, string email)
+            {
+                Faculty* fty = head_fc;
+
+                while (fty != NULL && fty->faculty_Abbreviation != abbr)
+                {
+                    fty = fty->next;
+                }
+
+                if (fty != NULL)
+                {
+                    Student* st = fty->head_fst;
+
+                    while (st != NULL && st->email != email)
+                    {
+                        st = st->next;
+                    }
+
+                    if (st != NULL) {
+                        cout << "Student with email " << email << " belongs to the faculty with the abbreviation: " << abbr << endl;
+                    } else {
+                        cout << "Student with email " << email << " is not enrolled in the faculty with the abbreviation: " << abbr << endl;
+                    }
+                } else {
+                    cout << "Faculty with abbreviation " << abbr << " not found." << endl;
+                }
+            }
+
+};
+
+
+
+class OperationLogger {
+public:
+    static void logOperation(const string& operation) {
+        ofstream logFile("operation_log.txt", ios::app);
+        if (logFile.is_open()) {
+            time_t now = time(0);
+            tm* localTime = localtime(&now);
+            logFile << "[" << localTime->tm_year + 1900 << '-' << localTime->tm_mon + 1 << '-' << localTime->tm_mday
+                    << " " << localTime->tm_hour << ":" << localTime->tm_min << ":" << localTime->tm_sec << "] "
+                    << operation << endl;
+            logFile.close();
+        } else {
+            cerr << "Error: Unable to open log file for writing." << endl;
+        }
+    }
+};
+
+
+class SaveManager 
+{
+public:
+    static void saveState(const string& fileName) 
+    {
+        ofstream file(fileName);
+        if (file.is_open()) 
+        {
+            saveFaculties(file);
+            saveStudents(file);
+            file.close();
+            cout << "Program state saved successfully." << endl;
+        } 
+
+        else 
+        {
+            cerr << "Error: Unable to open file for saving." << endl;
+        }
+        OperationLogger::logOperation("Save State");
+    }
+
+    static void loadState(const string& fileName) 
+    {
+        ifstream file(fileName);
+        if (file.is_open())
+        {
+            clearData();
+            loadFaculties(file);
+            loadStudents(file);
+            file.close();
+            cout << "Program state loaded successfully." << endl;
+        }
+        else 
+        {
+            cerr << "Error: Unable to open file for loading." << endl;
+        }
+
+        OperationLogger::logOperation("Load State");
+    }
+
+private:
+    static void saveFaculties(ofstream& file)    
+    {
+        Faculty* temp_fc = head_fc;
+        while (temp_fc != NULL) 
+        {
+            file << "Faculty|" << temp_fc->faculty_Name << "|" << temp_fc->faculty_Abbreviation << "|" << temp_fc->field << endl;
+            saveStudentsInFaculty(file, temp_fc->head_fst);
+            temp_fc = temp_fc->next;
+        }
+    }
+
+    static void saveStudents(ofstream& file)
+    {
+        Student* temp_st = head_st;
+        while (temp_st != NULL)
+        {
+            file << "Student|" << temp_st->firstName << "|" << temp_st->lastName << "|" << temp_st->email << "|" << temp_st->enrollmentDate
+                 << "|" << temp_st->day << "|" << temp_st->month << "|" << temp_st->year << endl;
+            temp_st = temp_st->next;
+        }
+    }
+
+    static void saveStudentsInFaculty(ofstream& file, Student* head) 
+    {
+        Student* temp_st = head;
+        while (temp_st != NULL)
+        {
+            file << "StudentInFaculty|" << temp_st->firstName << "|" << temp_st->lastName << "|" << temp_st->email << "|" << temp_st->enrollmentDate
+                 << "|" << temp_st->day << "|" << temp_st->month << "|" << temp_st->year << endl;
+            temp_st = temp_st->next;
+        }
+    }
+
+    static void loadFaculties(ifstream& file)
+    {
+        string line;
+        while (getline(file, line)) 
+        {
+            istringstream iss(line);
+            string token;
+            getline(iss, token, '|');
+            if (token == "Faculty") 
+            {
+                string facultyName, facultyAbbreviation, fieldStr;
+                getline(iss, facultyName, '|');
+                getline(iss, facultyAbbreviation, '|');
+                getline(iss, fieldStr, '|');
+                StudyField field = static_cast<StudyField>(stoi(fieldStr));
+                createFaculty(facultyName, facultyAbbreviation, field);
+            }
+        }
+    }
+
+    static void loadStudents(ifstream& file) 
+    {
+        string line;
+        while (getline(file, line))
+        {
+            istringstream iss(line);
+            string token;
+            getline(iss, token, '|');
+            if (token == "Student") 
+            {
+                string firstName, lastName, email, enrollmentDate, day, month, year;
+                getline(iss, firstName, '|');
+                getline(iss, lastName, '|');
+                getline(iss, email, '|');
+                getline(iss, enrollmentDate, '|');
+                getline(iss, day, '|');
+                getline(iss, month, '|');
+                getline(iss, year, '|');
+                createStudent(firstName, lastName, email, enrollmentDate, day, month, year, "");
+            } 
+
+            else if (token == "StudentInFaculty") 
+            {
+                string firstName, lastName, email, enrollmentDate, day, month, year;
+                getline(iss, firstName, '|');
+                getline(iss, lastName, '|');
+                getline(iss, email, '|');
+                getline(iss, enrollmentDate, '|');
+                getline(iss, day, '|');
+                getline(iss, month, '|');
+                getline(iss, year, '|');
+                addStudentToLastFaculty(firstName, lastName, email, enrollmentDate, day, month, year);
+            }
+        }
+    }
+
+    static void clearData() 
+    {
+        clearFaculties();
+        clearStudents();
+    }
+
+    static void clearFaculties() 
+    {
+        while (head_fc != NULL) 
+        {
+            Faculty* temp = head_fc;
+            head_fc = head_fc->next;
+            delete temp;
+        }
+    }
+
+    static void clearStudents()
+    {
+        while (head_st != NULL) 
+        {
+            Student* temp = head_st;
+            head_st = head_st->next;
+            delete temp;
+        }
+    }
+
+    static void addStudentToLastFaculty(const string& firstName, const string& lastName,
+                                        const string& email, const string& enrollmentDate,
+                                        const string& day, const string& month, const string& year)
+    {
+        if (lastCreatedFaculty != NULL) 
+        {
+            lastCreatedFaculty->add_student(firstName, lastName, email, enrollmentDate, day, month, year);
+        }
+    }
+
+    static void createFaculty(const string& facultyName, const string& facultyAbbreviation, StudyField field) 
+   {
+        lastCreatedFaculty = new Faculty(facultyName, facultyAbbreviation, field);
+        if (head_fc == NULL)
+        {
+            head_fc = lastCreatedFaculty;
+        } 
+
+        else
+        {
+            Faculty* temp = head_fc;
+            while (temp->next != NULL) 
+            {
+                temp = temp->next;
+            }
+            temp->next = lastCreatedFaculty;
+        }
+    }
+
+private:
+    static Faculty* head_fc;
+    static Student* head_st;
+    static Faculty* lastCreatedFaculty;
+};
+
+Faculty* SaveManager::head_fc = nullptr;
+Student* SaveManager::head_st = nullptr;
+Faculty* SaveManager::lastCreatedFaculty = nullptr;
+
+
+
+
+
+
+int main()
+{
+    SaveManager::loadState("program_state.txt");
+
+    Functions fn;
+    char opt;
+    string optg, optf, opts;
+
+
+    string tk, fname, lname, email, enroll, day, month, year, fabbr;
+
+    string tk2, faculty_name, fabbr2, field;
+
+
+
+
+    while(true)
+    {
+
+        cout<<"-----Welcome to the menu-----"<<endl<<endl;
+        cout<<"What do you want to do?"<<endl<<endl;
+        cout<<"g - General operations"<<endl;
+        cout<<"f - Faculty operations"<<endl;
+        cout<<"s - Student operations"<<endl;
+        cout<<"q - Quit program"<<endl<<endl;
+        cout<<"Your input> ";
+
+        cin>>opt;
+
+        switch(opt)
+        {
+            case 'g':
+            {
+                cout << "General Options:\n\n";
+                cout << "Create faculty -> nf/<faculty name>/<faculty abbreviation>/<field(0-4)>\n";
+                cout << "Search student and show faculty-> ss/<student email>\n";
+                cout << "Display University Faculties -> df \n";
+                cout << "Display all faculties belonging to a field -> da/<field(0-4)>\n\n";
+                cout << "b -> Back\n";
+                cout << "q - Quit Program\n";
+                cout<<"Your input> ";
+                cin>>optg;
+
+                istringstream iss0(optg);
+
+                if(optg[0] == 'b')
+                {
+                    break;
+                }
+                else if(optg[0] == 'q')
+                {
+                    exit(0);
+                }
+
+                else if(optg.substr(0,2) == "nf")
+                {
+
+
+                    if(getline(iss0, tk, '/') && getline(iss0, faculty_name, '/') && getline(iss0, fabbr2, '/') && getline(iss0, field))
+                    {
+                        int int_field = stoi(field);
+                        StudyField st_field = static_cast<StudyField>(int_field);
+                        fn.createFaculty(faculty_name, fabbr2, st_field);
+                    }
+                    else
+                    {
+                        cout << "Invalid input format.\n";
+                        cout<<"Press any key to continue: "<<endl;
+                        cin.ignore();
+                        cin.get();
+                    }
+
+                }
+                else if(optg.substr(0,2) == "ss")
+                {
+                    if(getline(iss0, tk, '/') && getline(iss0, email))
+                    {
+                        fn.search_student_faculty_by_email(email);
+                    }
+
+
+
+
+                }
+                else if(optg.substr(0,2) == "df")
+                {
+                    fn.display_all_Faculty();
+                    cin.get();
+
+                }
+                else if(optg.substr(0,2) == "da")
+                {
+
+
+
+                    if(getline(iss0, tk, '/') && getline(iss0, field))
+                    {
+                        int temp = stoi(field);
+                        StudyField s_field = static_cast<StudyField>(temp);
+                        fn.display_univerity_faculties_of_a_field(s_field);
+                    }
+
+                }
+                else
+                {
+                   cout << "Invalid input format.\n";
+                   cout<<"Press any key to continue: "<<endl;
+                   cin.ignore();
+                   cin.get();
+                }
+
+
+
+
+
+            }break;
+
+
+
+            case 'f':
+            {
+
+                cout << "Faculty operations:\n\n";
+                cout << "Create new student and assign to a faculty-> ns/<first name>/<last name>/<email>/<enrolment>/<day>/<month>/<year>/<faculty abbreviation>\n";
+                cout << "Graduate student -> gs/<email>\n";
+                cout << "Display current enrolled students -> ds/<faculty abbreviation>\n";
+                cout << "Display graduates -> dg/<faculty abbreviation>\n";
+                cout << "Check if a student belongs to a faculty -> bf/<faculty abbreviation>/<email>\n\n";
+                cout << "b -> Back\n";
+                cout << "q - Quit Program\n";
+                cout<<"Your input> ";
+                cin>>optf;
+
+                istringstream iss(optf);
+
+                if(optf[0] == 'b')
+                {
+                    break;
+                }
+                else if(optf[0] == 'q')
+                {
+                    exit(0);
+                }
+
+                else if(optf.substr(0,2) == "ns")
+                {
+                    if(getline(iss, tk, '/') && getline(iss, fname, '/') && getline(iss, lname, '/')
+                       && getline(iss, email, '/') && getline(iss, enroll, '/') && getline(iss, day, '/') && getline(iss, month, '/')
+                       && getline(iss, year, '/') && getline(iss, fabbr))
+                    {
+
+                        fn.createStudent(fname, lname, email, enroll, day, month, year, fabbr);
+
+
+                    }
+                    else
+                    {
+                        cout << "Invalid input format.\n";
+                        cout<<"Press any key to continue: "<<endl;
+                        getch();
+                    }
+
+                }
+
+                else if(optf.substr(0,2) == "gs")
+                {
+                     if(getline(iss, tk, '/') && getline(iss, email))
+                    {
+
+                    }
+                    else
+                    {
+                        cout << "Invalid input format.\n";
+                        cout<<"Press any key to continue: "<<endl;
+                        getch();
+                    }
+
+                }
+
+                else if(optf.substr(0,2) == "ds")
+                {
+                     if(getline(iss, tk, '/') && getline(iss, fabbr))
+                    {
+                        fn.display_enrolled_students(fabbr);
+
+                    }
+                    else
+                    {
+                        cout << "Invalid input format.\n";
+                        cout<<"Press any key to continue: "<<endl;
+                        getch();
+                    }
+
+                }
+                else if(optf.substr(0,2) == "dg")
+                {
+                     if(getline(iss, tk, '/') && getline(iss, fabbr))
+                    {
+                        fn.display_graduates(fabbr);
+
+                    }
+                    else
+                    {
+                        cout << "Invalid input format.\n";
+                        cout<<"Press any key to continue: "<<endl;
+                        getch();
+                    }
+
+                }
+
+                else if(optf.substr(0,2) == "bf")
+                {
+                    if(getline(iss, tk, '/') && getline(iss, fabbr, '/') && getline(iss, email) )
+                    {
+                        fn.belongs_to_faculty(fabbr, email);
+
+                    }
+                    else
+                    {
+                        cout << "Invalid input format.\n";
+                        cout<<"Press any key to continue: "<<endl;
+                        getch();
+                    }
+
+                }
+                break;
+
+
+
+            }
+
+
+
+
+            case 's':
+            {
+
+
+                cout << "Student Options:\n\n";
+                cout << "Display all students -> ds\n";
+                cout << "b -> Back\n";
+                cout << "q - Quit Program\n";
+                cout<<"Your input> ";
+                cin>>opts;
+
+                istringstream iss2(opts);
+
+                if(opts[0] == 'b')
+                {
+                    break;
+                }
+                else if(opts[0] == 'q')
+                {
+                    exit(0);
+                }
+
+                else if(opts.substr(0,2) == "ds")
+                {
+                    fn.display_all_Students();
+
+
+                }
+                break;
+            }
+
+            case 'q':
+            {
+                 exit(0);
+            }
+
+            default:
+            {
+
+                cout<<"Invalid choice"<<endl;
+                cout<<"Press any key to continue: "<<endl;
+                cin.ignore();
+                cin.get();
+
+
+            }
+        }
+
+
+
+    }
+
+    SaveManager::saveState("program_state.txt");
+
+    return 0;
+}
