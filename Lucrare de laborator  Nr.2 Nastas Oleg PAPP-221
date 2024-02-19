@@ -460,6 +460,197 @@ class Functions
 };
 
 
+class SaveManager 
+{
+public:
+    static void saveState(const string& fileName) 
+    {
+        ofstream file(fileName);
+        if (file.is_open()) 
+        {
+            saveFaculties(file);
+            saveStudents(file);
+            file.close();
+            cout << "Program state saved successfully." << endl;
+        } 
+
+        else 
+        {
+            cerr << "Error: Unable to open file for saving." << endl;
+        }
+    }
+
+    static void loadState(const string& fileName) 
+    {
+        ifstream file(fileName);
+        if (file.is_open())
+        {
+            clearData();
+            loadFaculties(file);
+            loadStudents(file);
+            file.close();
+            cout << "Program state loaded successfully." << endl;
+        }
+        else 
+        {
+            cerr << "Error: Unable to open file for loading." << endl;
+        }
+    }
+
+private:
+    static void saveFaculties(ofstream& file)    
+    {
+        Faculty* temp_fc = head_fc;
+        while (temp_fc != NULL) 
+        {
+            file << "Faculty|" << temp_fc->faculty_Name << "|" << temp_fc->faculty_Abbreviation << "|" << temp_fc->field << endl;
+            saveStudentsInFaculty(file, temp_fc->head_fst);
+            temp_fc = temp_fc->next;
+        }
+    }
+
+    static void saveStudents(ofstream& file)
+    {
+        Student* temp_st = head_st;
+        while (temp_st != NULL)
+        {
+            file << "Student|" << temp_st->firstName << "|" << temp_st->lastName << "|" << temp_st->email << "|" << temp_st->enrollmentDate
+                 << "|" << temp_st->day << "|" << temp_st->month << "|" << temp_st->year << endl;
+            temp_st = temp_st->next;
+        }
+    }
+
+    static void saveStudentsInFaculty(ofstream& file, Student* head) 
+    {
+        Student* temp_st = head;
+        while (temp_st != NULL)
+        {
+            file << "StudentInFaculty|" << temp_st->firstName << "|" << temp_st->lastName << "|" << temp_st->email << "|" << temp_st->enrollmentDate
+                 << "|" << temp_st->day << "|" << temp_st->month << "|" << temp_st->year << endl;
+            temp_st = temp_st->next;
+        }
+    }
+
+    static void loadFaculties(ifstream& file)
+    {
+        string line;
+        while (getline(file, line)) 
+        {
+            istringstream iss(line);
+            string token;
+            getline(iss, token, '|');
+            if (token == "Faculty") 
+            {
+                string facultyName, facultyAbbreviation, fieldStr;
+                getline(iss, facultyName, '|');
+                getline(iss, facultyAbbreviation, '|');
+                getline(iss, fieldStr, '|');
+                StudyField field = static_cast<StudyField>(stoi(fieldStr));
+                createFaculty(facultyName, facultyAbbreviation, field);
+            }
+        }
+    }
+
+    static void loadStudents(ifstream& file) 
+    {
+        string line;
+        while (getline(file, line))
+        {
+            istringstream iss(line);
+            string token;
+            getline(iss, token, '|');
+            if (token == "Student") 
+            {
+                string firstName, lastName, email, enrollmentDate, day, month, year;
+                getline(iss, firstName, '|');
+                getline(iss, lastName, '|');
+                getline(iss, email, '|');
+                getline(iss, enrollmentDate, '|');
+                getline(iss, day, '|');
+                getline(iss, month, '|');
+                getline(iss, year, '|');
+                createStudent(firstName, lastName, email, enrollmentDate, day, month, year, "");
+            } 
+
+            else if (token == "StudentInFaculty") 
+            {
+                string firstName, lastName, email, enrollmentDate, day, month, year;
+                getline(iss, firstName, '|');
+                getline(iss, lastName, '|');
+                getline(iss, email, '|');
+                getline(iss, enrollmentDate, '|');
+                getline(iss, day, '|');
+                getline(iss, month, '|');
+                getline(iss, year, '|');
+                addStudentToLastFaculty(firstName, lastName, email, enrollmentDate, day, month, year);
+            }
+        }
+    }
+
+    static void clearData() 
+    {
+        clearFaculties();
+        clearStudents();
+    }
+
+    static void clearFaculties() 
+    {
+        while (head_fc != NULL) 
+        {
+            Faculty* temp = head_fc;
+            head_fc = head_fc->next;
+            delete temp;
+        }
+    }
+
+    static void clearStudents()
+    {
+        while (head_st != NULL) 
+        {
+            Student* temp = head_st;
+            head_st = head_st->next;
+            delete temp;
+        }
+    }
+
+    static void addStudentToLastFaculty(const string& firstName, const string& lastName,
+                                        const string& email, const string& enrollmentDate,
+                                        const string& day, const string& month, const string& year)
+    {
+        if (lastCreatedFaculty != NULL) 
+        {
+            lastCreatedFaculty->add_student(firstName, lastName, email, enrollmentDate, day, month, year);
+        }
+    }
+
+    static void createFaculty(const string& facultyName, const string& facultyAbbreviation, StudyField field) 
+   {
+        lastCreatedFaculty = new Faculty(facultyName, facultyAbbreviation, field);
+        if (head_fc == NULL)
+        {
+            head_fc = lastCreatedFaculty;
+        } 
+
+        else
+        {
+            Faculty* temp = head_fc;
+            while (temp->next != NULL) 
+            {
+                temp = temp->next;
+            }
+            temp->next = lastCreatedFaculty;
+        }
+    }
+
+private:
+    static Faculty* head_fc;
+    static Student* head_st;
+    static Faculty* lastCreatedFaculty;
+};
+
+Faculty* SaveManager::head_fc = nullptr;
+Student* SaveManager::head_st = nullptr;
+Faculty* SaveManager::lastCreatedFaculty = nullptr;
 
 
 
@@ -468,6 +659,8 @@ class Functions
 
 int main()
 {
+    SaveManager::loadState("program_state.txt");
+
     Functions fn;
     char opt;
     string optg, optf, opts;
@@ -749,6 +942,8 @@ int main()
 
 
     }
+
+    SaveManager::saveState("program_state.txt");
 
     return 0;
 }
