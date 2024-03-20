@@ -240,17 +240,64 @@ public:
 
 };
 
+
+class Snapshot
+{
+private:
+    vector <unordered_map<string, File*>> snapshots;
+
+public:
+    void snapshot_creation(const vector<File*>& files)
+    {
+        unordered_map<string, File*> current_file_states;
+
+        for (const auto& file : files)
+        {
+            current_file_states[file->get_Name()] = file;
+        }
+
+        snapshots.push_back(current_file_states);
+    }
+
+
+    void rollback(int index, vector<File*>& files)
+    {
+        if(index < 0 || index >= snapshots.size())
+        {
+            cout << "Invalid snapshot number"<<endl;
+            return;
+        }
+
+        for (auto& file : files)
+        {
+            string name = file->get_Name();
+            auto it = snapshots[index].find(name);
+
+            if (it != snapshots[index].end())
+            {
+                *file = *it->second;
+            }
+        }
+        cout << "Rolled back to snapshot " << index << endl;
+    }
+};
+
+
+
+
 class Change_Detector
 {
 
 private:
-    string folder_location = "C:/Oleg_School/Lucrari de laborator C&C++/Asistenta pentru programarea orientata pe obiecte/Lab3";
+    string folder_location;
     vector<string> last_snapshot_files;
 
     time_t snapshot_time;
     vector<File*> files;
 
     thread detection_thread;
+
+    Snapshot snapshot_management;
 
 
 
@@ -264,12 +311,23 @@ private:
 
 public:
 
-    Change_Detector(const string& folder_path);
+    Change_Detector(const string& folder_path)
+        :folder_location(folder_path), snapshot_time(File::get_time())
+    {
+        for (const auto& entry : fs::directory_iterator(folder_path))
+        {
+            if (entry.is_regular_file())
+            {
+                last_snapshot_files.push_back(entry.path().filename().string());
+            }
+        }
+    }
 
     void commit()
     {
+        snapshot_management.snapshot_creation(files);
         snapshot_time = File::get_time();
-        cout << "Snapshot created at: " << get_time_as_string(snapshot_time);
+        cout << "Snapshot created at: " << get_time_as_string(snapshot_time)<<endl;
 
     }
 
@@ -311,7 +369,18 @@ public:
 
     }
 
+    void rollback(int index)
+    {
+        snapshot_management.rollback(index, files);
+    }
 
+    ~Change_Detector()
+    {
+        for (auto file : files)
+        {
+            delete file;
+        }
+    }
     
 
     
@@ -322,21 +391,6 @@ public:
     void detect_file_changes(bool scheduled = false);
 
 };
-
-Change_Detector::Change_Detector(const string& folder_path)
-    : folder_location(folder_path)
-{
-    
-    snapshot_time = File::get_time();
-
-    for (const auto& entry : fs::directory_iterator(folder_location))
-    {
-        if (entry.is_regular_file())
-        {
-            last_snapshot_files.push_back(entry.path().filename().string());
-        }
-    }
-}
 
 void Change_Detector::start_detection()
 {
@@ -359,7 +413,7 @@ void Change_Detector::stop_detection()
     }
 }
 
-void Change_Detector::detect_file_changes(bool scheduled)
+void Change_Detector::detect_file_changes(bool scheduled = false)
 {
     vector<string> current_files;
 
@@ -452,10 +506,22 @@ int main()
             detector.status();
 
         }
+    
+         else if (tokens[0] == "rollback" && tokens.size() == 2) 
+         {
+                int snapshot_index = stoi(tokens[1]);
+                detector.rollback(snapshot_index);
+         }
+         else
+         {
+                    cout << "Invalid command" << endl;
+         }
+    }
+
         
 
 
 
-    }
+    
     return 0;
 }
