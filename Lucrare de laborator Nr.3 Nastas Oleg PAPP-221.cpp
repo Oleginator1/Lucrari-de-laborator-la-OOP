@@ -7,11 +7,21 @@
 #include <filesystem>
 #include <chrono>
 #include <thread>
-#include <regex>
 
 
 using namespace std;
 namespace fs = filesystem;
+
+
+
+
+string get_time_as_string(time_t time1) {
+    std::tm timeinfo;
+    gmtime_s(&timeinfo, &time1);
+    char buffer[80];
+    strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &timeinfo);
+    return std::string(buffer);
+}
 
 
 class File
@@ -91,12 +101,6 @@ private:
     size_t char_count = 0;
     unordered_map<string, int> previous_word_count;
 
-    static string get_time_as_string(time_t time1)
-    {
-        char temp[80];
-        strftime(temp, sizeof(temp), "%Y-%m-%dT-%H:%M:%S", localtime(&time1));
-        return temp;
-    }
 
     int count_words(const string line)
     {
@@ -207,14 +211,7 @@ class Image_File : public File
 private:
     string image_size;
 
-    static string get_time_as_string(time_t time1)
-    {
-        char temp[80];
-        strftime(temp, sizeof(temp), "%Y-%m-%dT-%H:%M:%S", localtime(&time1));
-        return temp;
-    }
-
-
+   
 public:
 
     Image_File(const string nm, const string ext, const string pth)
@@ -301,13 +298,6 @@ private:
 
 
 
-
-    static string get_time_as_string(time_t time1)
-    {
-        char temp[80];
-        strftime(temp, sizeof(temp), "%Y-%m-%dT-%H:%M:%S", localtime(&time1));
-        return temp;
-    }
 
 public:
 
@@ -413,7 +403,7 @@ void Change_Detector::stop_detection()
     }
 }
 
-void Change_Detector::detect_file_changes(bool scheduled = false)
+void Change_Detector::detect_file_changes(bool scheduled)
 {
     vector<string> current_files;
 
@@ -471,7 +461,7 @@ int main()
     
     string input;
 
-    detector.stop_detection();
+    detector.start_detection();
 
     while (true)
     {
@@ -516,10 +506,9 @@ int main()
          {
                     cout << "Invalid command" << endl;
          }
-    }
+    }        
 
-        
-
+    detector.stop_detection();
 
 
     
